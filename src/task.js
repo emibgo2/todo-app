@@ -28,12 +28,13 @@ const Task = ({item,deleteTask,toggleTask,updateTask}) => {
             onPress={toggleTask}
             />
             <Contents completed={item.completed}>{item.text}</Contents>
-            {item.completed || <IconButton icon={icons.edit} onPress={updateTask}/>}
+            {item.completed || <IconButton icon={icons.edit}  item={item} onPress={updateTask}/>}
             <IconButton 
             icon={icons.delete}
             item={item}
             onPress={deleteTask}
             />
+
         </Container>
     )
 }
