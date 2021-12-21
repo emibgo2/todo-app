@@ -27,6 +27,7 @@ export default function App() {
   const [tasks, setTasks] = useState(tempData);
   const [newTask,setNewTask] = useState('');
   const [updateTasks,setUpdateTask] = useState('');
+  const [tempTask,setTempTask] = useState('');
   const [updateCheck,setUpdateCheck] = useState(false)
 
   const addTask = async () => {
@@ -60,48 +61,35 @@ export default function App() {
     await saveToDos(currentTasks);
   }
 
-//  const addTask = async () => {
-//     if(newTask.length <1) {
-//       return;
-//     }
-//     const Id = Date.now().toString();
-//     const newTaskObject = {
-//       [Id]: {id:Id, text: newTask, completed: false}
-//     }
-   
-//     setNewTask('');
-//     setTasks({...tasks,...newTaskObject}); 
 
-//     const currentTasks = Object.assign( tasks,newTaskObject);
-//     await saveToDos(currentTasks);
-//   }
 
-  const updateTask = (id) => {
+  const updateTask =  async(id) => {
     
     setUpdateCheck(!updateCheck);
+    const currentTasks = Object.assign({}, tasks);
+    const temp = currentTasks[id]['text'];
     if (updateCheck=== false){
-      console.log("update Task",id);
-      const currentTasks = Object.assign({}, tasks);
-      const temp = currentTasks[id]['text'];
+      setTempTask(id);
       setUpdateTask(temp);
+      updateTasks.placeholder = 'Modify'
     }
 
     if (updateCheck == true){
-      console.log("ididididid",id);
-      const updateTaskObject = {
-       [id]: {id:id, text: updateTasks, completed:false }
+      if(updateTasks.length <1) {
+        const currentTasks = Object.assign( {} ,tasks);
+        currentTasks[id]['text']= temp;
+        setTasks(currentTasks);
+        await saveToDos(currentTasks);
+        return;
       }
-      console.log('updateTaskObject Text', updateTasks);
+
       const currentTasks = Object.assign( {} ,tasks);
-      currentTasks[id]['text']=updateTasks
+      currentTasks[id]['text']= updateTasks
       setTasks(currentTasks);
+      await saveToDos(currentTasks);
     }
   } 
-  
-  const updateText  =  (id) =>{
-    console.log(id);
-    // setTasks(currentTasks);
-  }
+
 
   const saveToDos = async(toSave)=>{
     await AsyncStorage.setItem(STORAGE_KEY,  JSON.stringify(toSave));
@@ -110,7 +98,6 @@ export default function App() {
   const loadToDos = async()=>{
     const s = await AsyncStorage.getItem(STORAGE_KEY);
     setTasks(JSON.parse(s));
-    console.log(s);
   }
   
   useEffect(()=> {
@@ -125,12 +112,19 @@ export default function App() {
         barStyle='light-content'
         backgroundColor={theme.background}
          />
-         <Input 
-         placeholder="+ Add a Tasks"
-         value ={newTask}
-         onChangeText ={text => setNewTask(text)}
-         onSubmitEditing={addTask}
-          />
+        {updateCheck ? 
+          <Input placeholder="✓ Modify"
+          value = {updateTasks}
+          onChangeText ={text => setUpdateTask(text)}
+          onSubmitEditing={ ()=> updateTask(tempTask)}/>  : 
+          <Input 
+          placeholder="+ Add a Tasks"
+          value ={newTask}
+          onChangeText ={text => setNewTask(text)}
+          onSubmitEditing={addTask}
+           />
+        }         
+
           <List width={width}>
             {Object.values(tasks).reverse().map(item =>(
               <Task 
@@ -140,14 +134,11 @@ export default function App() {
               toggleTask={toggleTask}
               updateTask={updateTask}
               />
+              
             ))}
+   
           </List>
-          {updateCheck ? 
-          <Input placeholder="✓ Modify"
-          value ={updateTasks}
-          onChangeText ={text => setUpdateTask(text)}
-          onSubmitEditing={updateTask}/>  : null
-        }
+
       </Container>
     </ThemeProvider>
   );
