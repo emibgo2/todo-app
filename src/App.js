@@ -9,7 +9,7 @@ import Task from './task.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { any } from 'prop-types';
 
-const STORAGE_KEY ="@toDos";
+const STORAGE_KEY ="@bb";
 
 const List = styled.ScrollView`
   flex: 1;
@@ -97,12 +97,16 @@ export default function App() {
 
   const loadToDos = async()=>{
     const s = await AsyncStorage.getItem(STORAGE_KEY);
-    setTasks(JSON.parse(s));
+    if (s==null){
+      setTasks(tempData);
+    }
+    else setTasks(JSON.parse(s));
   }
   
   useEffect(()=> {
     loadToDos();
-  }, []);
+  },[]);
+
 
   return (
     <ThemeProvider theme={theme}>
